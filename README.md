@@ -4,7 +4,7 @@ Description of the `contest` package in R,
 
 ## What the contest package does?
 
-* This package solves an extension of the Moldovanu and Sela (2001)'s contest model that encompasses race contests (the first wins) and tournament contests (the best wins).
+* This package solves an extension of the [Moldovanu and Sela (2001)](https://www.aeaweb.org/articles?id=10.1257/aer.91.3.542)'s contest model that encompasses race contests (the first wins) and tournament contests (the best wins).
 
 * It provides an easy way to compute numerical integration when the model does not allow for explicit solutions (which happens many times)
 
