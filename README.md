@@ -1,7 +1,6 @@
-% Contest package in R
-%	Andrea Blasco
-% 
+# Contest package in R
 
+Description of the `contest` package in R, 
 
 ## What the contest package does?
 
