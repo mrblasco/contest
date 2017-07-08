@@ -60,7 +60,7 @@ pord <- function(x, k, n, p, ...) {
 #' @examples
 #' contest(seq(0, 1, length=10), n=10, type="race")
 
-contest <- function(x, n, type=c("race","tournament"), prize=c(1, 0), elasticity=c(-1, 2, -1)
+contest <- function(x, n, type=c("tournament", "race"), prize=c(1, 0), elasticity=c(-1, 2, -1)
 								, p=punif, d=dunif, xlim=c(0, 1), deadline=1, target=0.4, ...) {
 	stopifnot(all(x <= xlim[2] & x >= xlim[1])) # Check ability
 	stopifnot(n>2) 															# Check number of competitors
@@ -89,14 +89,14 @@ contest <- function(x, n, type=c("race","tournament"), prize=c(1, 0), elasticity
 		(-dord(x, n, n, p, d, ...) * pord(x, n-1, n-1, p, ...) +
 		dord(x, n-1, n-1, p, d, ...) * (1-pord(x, n, n, p, ...))) / cost(x, ALPHA)
 	}
-	type.zero <- uniroot(payoff, interval=xlim, y=target, z=deadline, prize=prize, rivals=rivals, p=p)$root
-	v1 <- sapply(x, function(k) integrate(A, upper=k, lower=type.zero, n=rivals, p=p, d=d)$val)
-	v2 <- sapply(x, function(k) integrate(B, upper=k, lower=type.zero, n=rivals, p=p, d=d)$val)
+	type.zero <- uniroot(payoff, interval=xlim, y=target, z=deadline, prize=prize, rivals=rivals, p=p, ...)$root
+	v1 <- sapply(x, function(k) integrate(A, upper=k, lower=type.zero, n=rivals, p=p, d=d, ...)$val)
+	v2 <- sapply(x, function(k) integrate(B, upper=k, lower=type.zero, n=rivals, p=p, d=d, ...)$val)
 	if (type=='tournament') { 
 		b0 <- cost(target, BETA)
 		prize.scaled <- prize / cost(deadline, GAMMA)
 		ystar <- cost(b0 + prize.scaled[1] * v1 + prize.scaled[2] * v2, 1/BETA) # Missing scaling
-		ustar <- ifelse(x<type.zero, 0, payoff(x, ystar, deadline, prize, rivals, p))
+		ustar <- ifelse(x<type.zero, 0, payoff(x, ystar, deadline, prize, rivals, p, ...))
 		tstar <- ifelse(x<type.zero, 0, deadline)
 		ystar <- ifelse(x<type.zero,0, ystar)
 	} else {
@@ -104,7 +104,7 @@ contest <- function(x, n, type=c("race","tournament"), prize=c(1, 0), elasticity
 		prize.scaled <- prize / cost(target, BETA)
 		tstar <- cost(b0 + prize.scaled[1] * v1 + prize.scaled[2] * v2, 1/GAMMA)
 		tstar <- ifelse(x<type.zero, deadline, tstar)
-		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p))
+		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p, ...))
 		ystar <- ifelse(x<type.zero, 0, target)	
 	}
 	out <- list(ability=x, score=ystar, timing=tstar, utility=ustar)

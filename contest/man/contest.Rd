@@ -4,7 +4,7 @@
 \alias{contest}
 \title{Tournament and race contest games}
 \usage{
-contest(x, n, type = c("race", "tournament"), prize = c(1, 0),
+contest(x, n, type = c("tournament", "race"), prize = c(1, 0),
   elasticity = c(-1, 2, -1), p = punif, d = dunif, xlim = c(0, 1),
   deadline = 1, target = 0.4, ...)
 }
