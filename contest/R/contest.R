@@ -113,7 +113,7 @@ contest <- function(x, n, type=c("tournament", "race"), prize=c(1, 0), elasticit
 		tstar <- ifelse(x<type.zero, 0, tstar)
 		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p, ...))
 		ystar <- ifelse(x<type.zero, 0, target)	
-		deriv	<- ifelse(x<type.zero, NA, (1/GAMMA) * ystar^(1-GAMMA) * (prize.scaled[1]* A(x, n, p, d, ...)
+		deriv	<- ifelse(x<type.zero, NA, (1/GAMMA) * tstar^(1-GAMMA) * (prize.scaled[1]* A(x, n, p, d, ...)
 						 + prize.scaled[2]* B(x, n, p, d, ...)))
 	}
 	out <- list(ability=x, score=ystar, timing=tstar, utility=ustar, deriv=deriv)
