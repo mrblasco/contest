@@ -20,10 +20,15 @@
 #' legend("topright", c("Min (1st OS)", "Max (n-th OS)", "Normal density"), lty=1:3, bty="n")
 
 dord <- function(x, k, n, p, d, ...) {
-	z <- lfactorial(n) - lfactorial(k-1) - lfactorial(n-k) +
-	(k-1)*p(x, log.p=TRUE, ...) + 
-	(n-k)*p(x, log.p=TRUE, lower.tail=FALSE, ...) + 
-	d(x, log=TRUE, ...)
+	if (n==k) {
+		z <- lfactorial(n) - lfactorial(k-1) - lfactorial(n-k) +
+		(k-1)*p(x, log.p=TRUE, ...) + d(x, log=TRUE, ...)
+	} else {
+		z <- lfactorial(n) - lfactorial(k-1) - lfactorial(n-k) +
+		(k-1)*p(x, log.p=TRUE, ...) + 
+		(n-k)*p(x, log.p=TRUE, lower.tail=FALSE, ...) + 
+		d(x, log=TRUE, ...)
+	}
 	return(exp(z))
 }
 
@@ -99,15 +104,19 @@ contest <- function(x, n, type=c("tournament", "race"), prize=c(1, 0), elasticit
 		ustar <- ifelse(x<type.zero, 0, payoff(x, ystar, deadline, prize, rivals, p, ...))
 		tstar <- ifelse(x<type.zero, 0, deadline)
 		ystar <- ifelse(x<type.zero,0, ystar)
+		deriv	<- ifelse(x<type.zero, NA, (1/BETA) * ystar^(1-BETA) * (prize.scaled[1]* A(x, n, p, d, ...) 
+							+ prize.scaled[2]* B(x, n, p, d, ...)))
 	} else {
 		b0 <- cost(deadline, GAMMA)
 		prize.scaled <- prize / cost(target, BETA)
 		tstar <- cost(b0 + prize.scaled[1] * v1 + prize.scaled[2] * v2, 1/GAMMA)
-		tstar <- ifelse(x<type.zero, deadline, tstar)
+		tstar <- ifelse(x<type.zero, 0, tstar)
 		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p, ...))
 		ystar <- ifelse(x<type.zero, 0, target)	
+		deriv	<- ifelse(x<type.zero, NA, (1/GAMMA) * ystar^(1-GAMMA) * (prize.scaled[1]* A(x, n, p, d, ...)
+						 + prize.scaled[2]* B(x, n, p, d, ...)))
 	}
-	out <- list(ability=x, score=ystar, timing=tstar, utility=ustar)
+	out <- list(ability=x, score=ystar, timing=tstar, utility=ustar, deriv=deriv)
 	out$marginal.type <- type.zero
 	out$type <- type
 	out$params <- list(prize=prize, n=n, elasticity=elasticity, target=target, deadline=deadline)	
