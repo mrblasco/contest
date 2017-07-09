@@ -83,38 +83,38 @@ contest <- function(x, n, type=c("tournament", "race"), prize=c(1, 0), elasticit
 	tlim <- c(0, deadline)
 	ylim <- c(target, cost(sum(prize)/(cost(xlim[2], ALPHA) * cost(deadline, GAMMA)), 1/BETA))
 	stopifnot(diff(ylim)>0 & diff(tlim)>0)
-	payoff <- function(x, y, z, prize, rivals, p, ...) {
+	payoff <- function(x, y, z, prize, rivals, p, elastic, ...) {
 			p1 <- pord(x, rivals, rivals, p, ...)
 			p2 <- (1 - p1) * pord(x, rivals-1, rivals-1, p, ...)
-			cost0 <- cost(x, ALPHA) * cost(y, BETA) * cost(z, GAMMA)
+			cost0 <- cost(x, elastic[1]) * cost(y, elastic[2]) * cost(z, elastic[3])
 			prize[1] * p1 + prize[2] * p2 - cost0
 	}
-	A <- function(x, n, p, d,...) dord(x, n, n, p, d, ...) / cost(x, ALPHA)
-	B <- function(x, n, p, d, ...) {
+	A <- function(x, n, p, d, alpha, ...) dord(x, n, n, p, d, ...) / cost(x, alpha)
+	B <- function(x, n, p, d, alpha, ...) {
 		(-dord(x, n, n, p, d, ...) * pord(x, n-1, n-1, p, ...) +
-		dord(x, n-1, n-1, p, d, ...) * (1-pord(x, n, n, p, ...))) / cost(x, ALPHA)
+		dord(x, n-1, n-1, p, d, ...) * (1-pord(x, n, n, p, ...))) / cost(x, alpha)
 	}
-	type.zero <- uniroot(payoff, interval=xlim, y=target, z=deadline, prize=prize, rivals=rivals, p=p, ...)$root
-	v1 <- sapply(x, function(k) integrate(A, upper=k, lower=type.zero, n=rivals, p=p, d=d, ...)$val)
-	v2 <- sapply(x, function(k) integrate(B, upper=k, lower=type.zero, n=rivals, p=p, d=d, ...)$val)
+	type.zero <- uniroot(payoff, interval=xlim, y=target, z=deadline, prize=prize, rivals=rivals, p=p, elastic=elasticity, ...)$root
+	v1 <- sapply(x, function(k) integrate(A, upper=k, lower=type.zero, n=rivals, p=p, d=d, alpha=ALPHA,...)$val)
+	v2 <- sapply(x, function(k) integrate(B, upper=k, lower=type.zero, n=rivals, p=p, d=d, alpha=ALPHA,...)$val)
 	if (type=='tournament') { 
 		b0 <- cost(target, BETA)
 		prize.scaled <- prize / cost(deadline, GAMMA)
 		ystar <- cost(b0 + prize.scaled[1] * v1 + prize.scaled[2] * v2, 1/BETA) # Missing scaling
-		ustar <- ifelse(x<type.zero, 0, payoff(x, ystar, deadline, prize, rivals, p, ...))
+		ustar <- ifelse(x<type.zero, 0, payoff(x, ystar, deadline, prize, rivals, p, elasticity, ...))
 		tstar <- ifelse(x<type.zero, 0, deadline)
 		ystar <- ifelse(x<type.zero,0, ystar)
-		deriv	<- ifelse(x<type.zero, NA, (1/BETA) * ystar^(1-BETA) * (prize.scaled[1]* A(x, n, p, d, ...) 
-							+ prize.scaled[2]* B(x, n, p, d, ...)))
+		deriv	<- ifelse(x<type.zero, NA, (1/BETA) * ystar^(1-BETA) * (prize.scaled[1]* A(x, n, p, d, ALPHA,...) 
+							+ prize.scaled[2]* B(x, n, p, d, ALPHA,...)))
 	} else {
 		b0 <- cost(deadline, GAMMA)
 		prize.scaled <- prize / cost(target, BETA)
 		tstar <- cost(b0 + prize.scaled[1] * v1 + prize.scaled[2] * v2, 1/GAMMA)
 		tstar <- ifelse(x<type.zero, 0, tstar)
-		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p, ...))
+		ustar <- ifelse(x<type.zero, 0, payoff(x, target, tstar, prize, rivals, p, elasticity,...))
 		ystar <- ifelse(x<type.zero, 0, target)	
-		deriv	<- ifelse(x<type.zero, NA, (1/GAMMA) * tstar^(1-GAMMA) * (prize.scaled[1]* A(x, n, p, d, ...)
-						 + prize.scaled[2]* B(x, n, p, d, ...)))
+		deriv	<- ifelse(x<type.zero, NA, (1/GAMMA) * tstar^(1-GAMMA) * (prize.scaled[1]* A(x, n, p, d, ALPHA,...)
+						 + prize.scaled[2]* B(x, n, p, d, ALPHA,...)))
 	}
 	out <- list(ability=x, score=ystar, timing=tstar, utility=ustar, deriv=deriv)
 	out$marginal.type <- type.zero
